@@ -111,7 +111,7 @@ void detectAndDisplay( Mat frame , vector<Rect> face_t_pos)
 	cascade.detectMultiScale( frame_gray, faces, 1.1, 1, 0|CV_HAAR_SCALE_IMAGE, Size(10, 10), Size(300,300) );
 
     // 3. Draw box around faces found from viola jones
-	for( int i = 0; i < face_t_pos.size(); i++ )
+	for( int i = 0; i < faces.size(); i++ )
 	{
 		rectangle(frame, Point(faces[i].x, faces[i].y), Point(faces[i].x + faces[i].width, faces[i].y + faces[i].height), Scalar( 0, 255, 0), 2);
 	}
@@ -120,9 +120,11 @@ void detectAndDisplay( Mat frame , vector<Rect> face_t_pos)
 	for( int i = 0; i < face_t_pos.size(); i++ )
 	{
 		rectangle(frame, Point(face_t_pos[i].x, face_t_pos[i].y), Point(face_t_pos[i].x + face_t_pos[i].width, face_t_pos[i].y + face_t_pos[i].height), Scalar( 0, 0, 255 ), 2);
+		
 	}
  
 	// 5. Print number of faces
-	cout<<"[Number of faces] " << faces.size() <<endl;
+	cout<<"[Number of faces (ground truth)] " << face_t_pos.size() <<endl;
+	cout<<"[Number of faces detected] " << faces.size() <<endl;
 
 }
