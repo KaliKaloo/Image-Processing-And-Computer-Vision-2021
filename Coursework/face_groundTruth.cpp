@@ -27,8 +27,7 @@ void draw_rect (Mat image, Rect r, Scalar c);
 void draw_truth_faces (string imageNum, Mat image, vector<Rect> &truth_faces);
 float num_correctly_detected_faces(vector<Rect> truth_faces, vector<Rect> detected_faces);
 float get_true_positive_rate(int correct_faces, vector<Rect> truth_faces);
-// float get_f1_score(float precision, float recall);
-float get_f1_score(float t_p, float f_p, float f_n);
+float get_f1_score(float true_positive, float false_positive, float false_negative);
 
 
 /** Global variables */
@@ -63,6 +62,7 @@ int main( int argc, const char** argv )
 	float false_positive = detected_faces.size() - correct_faces;
 	float false_negative = truth_faces.size() - correct_faces;
 	float f1_score = get_f1_score(correct_faces, false_positive, false_negative);
+
 
 	cout<< "[Correctly identified faces] " <<correct_faces <<endl;
 	cout<< "[True positive rate] " <<tpr <<endl;
@@ -183,14 +183,10 @@ float get_true_positive_rate(int correct_faces, vector<Rect> truth_faces){
 	}
 }
 
-// float get_f1_score(float precision, float recall){
-// 	if(precision != 0 && recall != 0){
-// 		return (float) 2 * (precision*recall) / (precision+recall);
-// 	}else{
-// 		return 0;
-// 	}
-// }
-float get_f1_score(float t_p, float f_p, float f_n){
-	return (t_p == 0 && f_p == 0 && f_n ==0) ? 0: t_p/(t_p+0.5*(f_p+f_n));
+float get_f1_score(float true_positive, float false_positive, float false_negative){
+	if(true_positive == 0 && false_positive == 0 && false_negative == 0){
+		return 0;
+	}else{
+		return (true_positive/(true_positive+0.5*(false_positive+false_negative)));
+	}
 }
-
