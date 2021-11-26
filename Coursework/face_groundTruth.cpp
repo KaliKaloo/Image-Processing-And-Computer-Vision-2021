@@ -27,6 +27,9 @@ void draw_rect (Mat image, Rect r, Scalar c);
 void draw_truth_faces (string imageNum, Mat image, vector<Rect> &truth_faces);
 float num_correctly_detected_faces(vector<Rect> truth_faces, vector<Rect> detected_faces);
 float get_true_positive_rate(int correct_faces, vector<Rect> truth_faces);
+// float get_f1_score(float precision, float recall);
+float get_f1_score(float t_p, float f_p, float f_n);
+
 
 /** Global variables */
 String cascade_name = "frontalface.xml";
@@ -57,9 +60,13 @@ int main( int argc, const char** argv )
 
 	float correct_faces = num_correctly_detected_faces(truth_faces, detected_faces);
 	float tpr = get_true_positive_rate(correct_faces, truth_faces);
+	float false_positive = detected_faces.size() - correct_faces;
+	float false_negative = truth_faces.size() - correct_faces;
+	float f1_score = get_f1_score(correct_faces, false_positive, false_negative);
 
 	cout<< "[Correctly identified faces] " <<correct_faces <<endl;
 	cout<< "[True positive rate] " <<tpr <<endl;
+	cout<< "[F1-Score] " <<f1_score <<endl;
 	cout <<" "<<endl;
 
 	return 0;
@@ -130,7 +137,7 @@ void detectAndDisplay( Mat image , vector<Rect> &detected_faces)
 
 /** @function intersection_over_union */
 float num_correctly_detected_faces(vector<Rect> truth_faces, vector<Rect> detected_faces){
-	float theshold = 0.3;
+	float theshold = 0.6;
 	float max_iou = 0;
 	int correct_faces = 0;
 
@@ -160,7 +167,6 @@ float num_correctly_detected_faces(vector<Rect> truth_faces, vector<Rect> detect
 				float iou = intersect_area/union_area;
 				if( iou > max_iou) {
 					max_iou = iou;
-					// cout <<"max_iou: " <<max_iou<<endl;
 				}
 			}
 		}
@@ -175,5 +181,16 @@ float get_true_positive_rate(int correct_faces, vector<Rect> truth_faces){
 		cout << "No true faces" << endl;
 		return 0;
 	}
+}
+
+// float get_f1_score(float precision, float recall){
+// 	if(precision != 0 && recall != 0){
+// 		return (float) 2 * (precision*recall) / (precision+recall);
+// 	}else{
+// 		return 0;
+// 	}
+// }
+float get_f1_score(float t_p, float f_p, float f_n){
+	return (t_p == 0 && f_p == 0 && f_n ==0) ? 0: t_p/(t_p+0.5*(f_p+f_n));
 }
 
