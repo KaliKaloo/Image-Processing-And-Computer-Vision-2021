@@ -38,6 +38,8 @@ CascadeClassifier cascade;
 int main( int argc, const char** argv )
 {
 	string imageNum = argv[1];
+	string imageNum = splitString()
+	string imageNum = 
 
 	// MAKE SURE TO CHANGE THE WAY YOU READ IN THE FILE NAME!!!!!!
     // 1. Read Input Image
