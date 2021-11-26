@@ -21,10 +21,12 @@ using namespace std;
 using namespace cv;
 
 /** Function Headers */
-void detectAndDisplay( Mat image);
+void detectAndDisplay( Mat image, vector<Rect> &detected_faces);
 vector<std::string> splitString(string &line, char delimiter);
 void draw_rect (Mat image, Rect r, Scalar c);
-void draw_face_truths (string imageNum, Mat image);
+void draw_truth_faces (string imageNum, Mat image, vector<Rect> &truth_faces);
+float num_correctly_detected_faces(vector<Rect> truth_faces, vector<Rect> detected_faces);
+float get_true_positive_rate(int correct_faces, vector<Rect> truth_faces);
 
 /** Global variables */
 String cascade_name = "frontalface.xml";
@@ -40,13 +42,25 @@ int main( int argc, const char** argv )
 
 	// // 2. Load the Strong Classifier in a structure called `Cascade'
 	if( !cascade.load( cascade_name ) ){ printf("--(!)Error loading\n"); return -1; };
-
+	
+	cout <<" "<<endl;
+	
 	// // 3. Detect Faces and Display Result
-	draw_face_truths(imageNum,image);
-	detectAndDisplay(image);
+	vector<Rect> truth_faces;
+	draw_truth_faces(imageNum,image,truth_faces);
+	
+	vector<Rect> detected_faces;
+	detectAndDisplay(image, detected_faces);
 
 	// // 4. Save Result Image
 	imwrite( "face_groundTruth/gt_detected"+imageNum+".jpg", image );
+
+	float correct_faces = num_correctly_detected_faces(truth_faces, detected_faces);
+	float tpr = get_true_positive_rate(correct_faces, truth_faces);
+
+	cout<< "[Correctly identified faces] " <<correct_faces <<endl;
+	cout<< "[True positive rate] " <<tpr <<endl;
+	cout <<" "<<endl;
 
 	return 0;
 }
@@ -69,8 +83,7 @@ void draw_rect (Mat image, Rect r, Scalar c){
 }
 
 /** @function draw_face_truths */
-void draw_face_truths (string imageNum, Mat image){
-	vector<Rect> face_truths;
+void draw_truth_faces (string imageNum, Mat image, vector<Rect> &truth_faces){
 	string file_name = "face_truths/faces-ground-truths.csv";
 	ifstream file("face_groundTruth/faces-ground-truths.csv");
 	string line;
@@ -80,23 +93,22 @@ void draw_face_truths (string imageNum, Mat image){
 		if((tokens[0]=="NoEntry"+imageNum+".jpg")&&(tokens[0]==tokens[0])){
 			//RECT(height, width, x, y) try swapping h and w if not working
 			Rect r = Rect(atoi(tokens[1].c_str()),atoi(tokens[2].c_str()),atoi(tokens[3].c_str()),atoi(tokens[4].c_str()));
-			face_truths.push_back(r);
+			truth_faces.push_back(r);
 		}
 	}
 	file.close();
 
 	// Draw ground truth faces
-	for( int i = 0; i < face_truths.size(); i++ ){
-		draw_rect(image, face_truths[i], Scalar(0,0,255));
+	for( int i = 0; i < truth_faces.size(); i++ ){
+		draw_rect(image, truth_faces[i], Scalar(0,0,255));
 	}
 	// Print nukber of true faces
-	cout<<"[Number of true faces] " << face_truths.size() <<endl;
+	cout<<"[Number of true faces] " << truth_faces.size() <<endl;
 }
 
 /** @function detectAndDisplay */
-void detectAndDisplay( Mat image )
+void detectAndDisplay( Mat image , vector<Rect> &detected_faces)
 {
-	std::vector<Rect> faces;
 	Mat image_gray;
 
 	// 1. Prepare Image by turning it into Grayscale and normalising lighting
@@ -104,16 +116,64 @@ void detectAndDisplay( Mat image )
 	equalizeHist( image_gray, image_gray );
 
 	// 2. Perform Viola-Jones Object Detection 
-	cascade.detectMultiScale( image_gray, faces, 1.1, 1, 0|CV_HAAR_SCALE_IMAGE, Size(10, 10), Size(300,300) );
+	cascade.detectMultiScale( image_gray, detected_faces, 1.1, 1, 0|CV_HAAR_SCALE_IMAGE, Size(10, 10), Size(300,300) );
 
     // 3. Draw box around faces found from viola jones
-	for( int i = 0; i < faces.size(); i++ )
+	for( int i = 0; i < detected_faces.size(); i++ )
 	{
-		draw_rect(image, faces[i], Scalar(0,255,0));
+		draw_rect(image, detected_faces[i], Scalar(0,255,0));
 	}
 
 	// 4. Print number of faces detected
-	cout<<"[Number of detected faces] " << faces.size() <<endl;
+	cout<<"[Number of detected faces] " << detected_faces.size() <<endl;
+} 
+
+/** @function intersection_over_union */
+float num_correctly_detected_faces(vector<Rect> truth_faces, vector<Rect> detected_faces){
+	float theshold = 0.3;
+	float max_iou = 0;
+	int correct_faces = 0;
+
+	for(int i=0; i<truth_faces.size(); i++){
+		Rect tf = truth_faces[i];
+		float tf_x1 = tf.x + tf.width;
+		float tf_y1 = tf.y + tf.height;
+
+		for(int j=0; j<detected_faces.size(); j++){
+			Rect df = detected_faces[j];
+
+			// calculate intersection over union
+			float df_x1 = df.x + df.width;
+			float df_y1 = df.y + df.height;
+
+
+			float xDiff = min(df_x1, tf_x1) - max(df.x,tf.x);
+			float yDiff = min(df_y1, tf_y1) - max(df.y,tf.y);
+
+			if (xDiff <=0 or yDiff <=0) {
+				continue;
+			}
+			else{
+				float intersect_area = xDiff *yDiff;
+				float union_area = (df.width*df.height) + (tf.width*tf.height) - intersect_area;
+				
+				float iou = intersect_area/union_area;
+				if( iou > max_iou) {
+					max_iou = iou;
+					// cout <<"max_iou: " <<max_iou<<endl;
+				}
+			}
+		}
+		if(max_iou > theshold) correct_faces++;
+	}
+return correct_faces;
 }
- 
+
+float get_true_positive_rate(int correct_faces, vector<Rect> truth_faces){
+	if(truth_faces.size() > 0) return correct_faces/truth_faces.size();
+	else{
+		cout << "No true faces" << endl;
+		return 0;
+	}
+}
 
