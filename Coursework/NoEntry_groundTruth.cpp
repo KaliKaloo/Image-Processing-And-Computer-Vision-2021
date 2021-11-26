@@ -92,6 +92,7 @@ void draw_rect (Mat image, Rect r, Scalar c){
 
 /** @function draw_face_truths */
 void draw_truth_faces (string imageNum, Mat image, vector<Rect> &truth_faces){
+	string file_name = "face_truths/faces-ground-truths.csv";
 	ifstream file("face_groundTruth/faces-ground-truths.csv");
 	string line;
 
@@ -112,7 +113,7 @@ void draw_truth_faces (string imageNum, Mat image, vector<Rect> &truth_faces){
 	for( int i = 0; i < truth_faces.size(); i++ ){
 		draw_rect(image, truth_faces[i], Scalar(0,0,255));
 	}
-	// Print number of true faces
+	// Print nukber of true faces
 	cout<<"[Number of true faces] " << truth_faces.size() <<endl;
 }
 
