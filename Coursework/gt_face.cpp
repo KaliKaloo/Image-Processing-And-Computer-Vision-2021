@@ -56,7 +56,7 @@ int main( int argc, const char** argv )
 	detectAndDisplay(image, detected_faces);
 
 	// 4. Save Result Image
-	imwrite( "face_groundTruth/gt_detected"+imageNum+".jpg", image );
+	imwrite( "groundTruth_faces/gt_detected"+imageNum+".jpg", image );
 
 	float correct_faces = num_correctly_detected_faces(truth_faces, detected_faces);
 	float tpr = get_true_positive_rate(correct_faces, truth_faces);
@@ -92,8 +92,7 @@ void draw_rect (Mat image, Rect r, Scalar c){
 
 /** @function draw_face_truths */
 void draw_truth_faces (string imageNum, Mat image, vector<Rect> &truth_faces){
-	string file_name = "face_truths/faces-ground-truths.csv";
-	ifstream file("face_groundTruth/faces-ground-truths.csv");
+	ifstream file("groundTruth_faces/faces-ground-truths.csv");
 	string line;
 
 	while(getline(file, line)) {
@@ -113,7 +112,7 @@ void draw_truth_faces (string imageNum, Mat image, vector<Rect> &truth_faces){
 	for( int i = 0; i < truth_faces.size(); i++ ){
 		draw_rect(image, truth_faces[i], Scalar(0,0,255));
 	}
-	// Print nukber of true faces
+	// Print number of true faces
 	cout<<"[Number of true faces] " << truth_faces.size() <<endl;
 }
 

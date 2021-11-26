@@ -31,15 +31,13 @@ float get_f1_score(float true_positive, float false_positive, float false_negati
 
 
 /** Global variables */
-String cascade_name = "frontalface.xml";
+String cascade_name = "NoEntrycascade/cascade.xml";
 CascadeClassifier cascade;	
 
 /** @function main */
 int main( int argc, const char** argv )
 {
 	string imageNum = argv[1];
-	string imageNum = splitString()
-	string imageNum = 
 
 	// MAKE SURE TO CHANGE THE WAY YOU READ IN THE FILE NAME!!!!!!
     // 1. Read Input Image
@@ -58,7 +56,7 @@ int main( int argc, const char** argv )
 	detectAndDisplay(image, detected_faces);
 
 	// 4. Save Result Image
-	imwrite( "face_groundTruth/gt_detected"+imageNum+".jpg", image );
+	imwrite( "groundTruth_NoEntry/gt_detected"+imageNum+".jpg", image );
 
 	float correct_faces = num_correctly_detected_faces(truth_faces, detected_faces);
 	float tpr = get_true_positive_rate(correct_faces, truth_faces);
@@ -94,7 +92,7 @@ void draw_rect (Mat image, Rect r, Scalar c){
 
 /** @function draw_face_truths */
 void draw_truth_faces (string imageNum, Mat image, vector<Rect> &truth_faces){
-	ifstream file("face_groundTruth/faces-ground-truths.csv");
+	ifstream file("groundTruth_NoEntry/noentry-ground-truths.csv");
 	string line;
 
 	while(getline(file, line)) {
@@ -114,7 +112,7 @@ void draw_truth_faces (string imageNum, Mat image, vector<Rect> &truth_faces){
 	for( int i = 0; i < truth_faces.size(); i++ ){
 		draw_rect(image, truth_faces[i], Scalar(0,0,255));
 	}
-	// Print number of true faces
+	// Print nukber of true faces
 	cout<<"[Number of true faces] " << truth_faces.size() <<endl;
 }
 
@@ -137,12 +135,12 @@ void detectAndDisplay( Mat image , vector<Rect> &detected_faces)
 	}
 
 	// 4. Print number of faces detected
-	cout<<"[Number of detected faces] " << detected_faces.size() <<endl;
+	cout<<"[Number of detected no entry signs] " << detected_faces.size() <<endl;
 } 
 
 /** @function intersection_over_union */
 float num_correctly_detected_faces(vector<Rect> truth_faces, vector<Rect> detected_faces){
-	float theshold = 0.6;
+	float theshold = 0.4;
 	float max_iou = 0;
 	int correct_faces = 0;
 
