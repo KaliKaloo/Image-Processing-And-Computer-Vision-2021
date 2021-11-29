@@ -1,0 +1,47 @@
+bash-4.2$ ./a.out 1
+ 
+[Number of true faces] 1
+[Number of detected faces] 7
+[Correctly identified faces] 1
+[True positive rate] 1
+[F1-Score] 0.25
+ 
+bash-4.2$ ./a.out 2
+ 
+[Number of true faces] 2
+[Number of detected faces] 15
+[Correctly identified faces] 2
+[True positive rate] 1
+[F1-Score] 0.235294
+ 
+bash-4.2$ ./a.out 4
+ 
+[Number of true faces] 5
+[Number of detected faces] 27
+[Correctly identified faces] 5
+[True positive rate] 1
+[F1-Score] 0.3125
+ 
+bash-4.2$ ./a.out 5
+ 
+[Number of true faces] 1
+[Number of detected faces] 5
+[Correctly identified faces] 1
+[True positive rate] 1
+[F1-Score] 0.333333
+ 
+bash-4.2$ ./a.out 7
+ 
+[Number of true faces] 2
+[Number of detected faces] 8
+[Correctly identified faces] 1
+[True positive rate] 0
+[F1-Score] 0.2
+ 
+bash-4.2$ ./a.out 11
+ 
+[Number of true faces] 2
+[Number of detected faces] 10
+[Correctly identified faces] 2
+[True positive rate] 1
+[F1-Score] 0.333333

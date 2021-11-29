@@ -56,7 +56,7 @@ int main( int argc, const char** argv )
 	detectAndDisplay(image, detected_faces);
 
 	// 4. Save Result Image
-	imwrite( "groundTruth_faces/gt_detected"+imageNum+".jpg", image );
+	imwrite( "groundTruth_faces/gt_face_detected"+imageNum+".jpg", image );
 
 	float correct_faces = num_correctly_detected_faces(truth_faces, detected_faces);
 	float tpr = get_true_positive_rate(correct_faces, truth_faces);
@@ -141,10 +141,11 @@ void detectAndDisplay( Mat image , vector<Rect> &detected_faces)
 /** @function intersection_over_union */
 float num_correctly_detected_faces(vector<Rect> truth_faces, vector<Rect> detected_faces){
 	float theshold = 0.6;
-	float max_iou = 0;
 	int correct_faces = 0;
 
 	for(int i=0; i<truth_faces.size(); i++){
+		float max_iou = 0;
+
 		Rect tf = truth_faces[i];
 		float tf_x1 = tf.x + tf.width;
 		float tf_y1 = tf.y + tf.height;
