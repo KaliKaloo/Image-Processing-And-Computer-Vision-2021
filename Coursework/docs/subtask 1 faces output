@@ -35,7 +35,7 @@ bash-4.2$ ./a.out 7
 [Number of true faces] 2
 [Number of detected faces] 8
 [Correctly identified faces] 1
-[True positive rate] 0
+[True positive rate] 0.5
 [F1-Score] 0.2
  
 bash-4.2$ ./a.out 11

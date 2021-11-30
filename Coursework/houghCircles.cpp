@@ -238,8 +238,6 @@ vector<vector<int> > hough_circles(Mat &input, int r_min, int r_max, double thre
  
         }
     }
- 	// Mat hough_norm(input.rows, input.cols, CV_8UC1);
-    // normalize(hough_output, hough_norm, 0, 255, NORM_MINMAX);
 
     imwrite( "hough_space.jpg", hough_output );
 
@@ -248,22 +246,7 @@ vector<vector<int> > hough_circles(Mat &input, int r_min, int r_max, double thre
 	for (int x = 0; x < input.rows; x++) {
         for (int y = 0; y < input.cols; y++) {
 			bool test_pass = true;
-			// map<int, int> t_circles;
-            // for (int r = r_min; r < r_max; r++) {
-			// 	if(hough_space[x][y][r] > threshold) {
-			// 		t_circles[r] = hough_space[x][y][r];
-			// 	}
-            // }
-
-			// int max_c = 0;
-			// int max_r = 0;
-			// for(map<int, int>::const_iterator it = t_circles.begin(); it != t_circles.end(); ++it) {
-			// 	if(it->second > max_c) {
-			// 		max_r = it->first;
-			// 		max_c = it->second;
-			// 	}
-			// }
-
+		
 			int max_r = 0;
 			int currentMax = 0;
 			for (int r = r_min; r < r_max; r++) {

@@ -140,15 +140,15 @@ void detectAndDisplay( Mat image , vector<Rect> &detected_faces)
 
 /** @function intersection_over_union */
 float num_correctly_detected_faces(vector<Rect> truth_faces, vector<Rect> detected_faces){
-	float theshold = 0.6;
+	float theshold = 0.4;
 	int correct_faces = 0;
 
-	for(int i=0; i<truth_faces.size(); i++){
-		float max_iou = 0;
 
+	for(int i=0; i<truth_faces.size(); i++){
 		Rect tf = truth_faces[i];
 		float tf_x1 = tf.x + tf.width;
 		float tf_y1 = tf.y + tf.height;
+		float max_iou = 0;
 
 		for(int j=0; j<detected_faces.size(); j++){
 			Rect df = detected_faces[j];
@@ -180,7 +180,7 @@ return correct_faces;
 }
 
 float get_true_positive_rate(int correct_faces, vector<Rect> truth_faces){
-	if(truth_faces.size() > 0) return correct_faces/truth_faces.size();
+	if(truth_faces.size() > 0) return correct_faces/float(truth_faces.size());
 	else{
 		cout << "No true faces" << endl;
 		return 0;

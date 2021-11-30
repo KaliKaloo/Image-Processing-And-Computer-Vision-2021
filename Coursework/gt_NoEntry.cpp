@@ -180,7 +180,7 @@ return correct_faces;
 }
 
 float get_true_positive_rate(int correct_faces, vector<Rect> truth_faces){
-	if(truth_faces.size() > 0) return correct_faces/truth_faces.size();
+	if(truth_faces.size() > 0) return correct_faces/float(truth_faces.size());
 	else{
 		cout << "No true faces" << endl;
 		return 0;
