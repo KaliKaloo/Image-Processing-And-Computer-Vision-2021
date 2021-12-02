@@ -1,127 +1,111 @@
 bash-4.2$ ./a.out 0
- 
-[Number of true faces] 2
-[Number of detected no entry signs] 28
-[Correctly identified faces] 2
+[Number of true NE signs] 2
+[Number of detected no entry signs] 20
+[Correctly identified NE signs] 2
 [True positive rate] 1
-[F1-Score] 0.133333
+[F1-Score] 0.181818
  
 bash-4.2$ ./a.out 1
- 
-[Number of true faces] 1
-[Number of detected no entry signs] 16
-[Correctly identified faces] 1
+[Number of true NE signs] 1
+[Number of detected no entry signs] 6
+[Correctly identified NE signs] 1
 [True positive rate] 1
-[F1-Score] 0.117647
+[F1-Score] 0.285714
  
 bash-4.2$ ./a.out 2
- 
-[Number of true faces] 1
-[Number of detected no entry signs] 25
-[Correctly identified faces] 1
+[Number of true NE signs] 1
+[Number of detected no entry signs] 8
+[Correctly identified NE signs] 1
 [True positive rate] 1
-[F1-Score] 0.0769231
+[F1-Score] 0.222222
  
 bash-4.2$ ./a.out 3
- 
-[Number of true faces] 2
-[Number of detected no entry signs] 11
-[Correctly identified faces] 2
+[Number of true NE signs] 2
+[Number of detected no entry signs] 9
+[Correctly identified NE signs] 2
 [True positive rate] 1
-[F1-Score] 0.307692
+[F1-Score] 0.363636
  
 bash-4.2$ ./a.out 4
- 
-[Number of true faces] 2
-[Number of detected no entry signs] 24
-[Correctly identified faces] 2
-[True positive rate] 1
-[F1-Score] 0.153846
+[Number of true NE signs] 2
+[Number of detected no entry signs] 19
+[Correctly identified NE signs] 1
+[True positive rate] 0.5
+[F1-Score] 0.0952381
  
 bash-4.2$ ./a.out 5
- 
-[Number of true faces] 10
-[Number of detected no entry signs] 22
-[Correctly identified faces] 1
+[Number of true NE signs] 10
+[Number of detected no entry signs] 19
+[Correctly identified NE signs] 1
 [True positive rate] 0.1
-[F1-Score] 0.0625
+[F1-Score] 0.0689655
  
 bash-4.2$ ./a.out 6
- 
-[Number of true faces] 4
+[Number of true NE signs] 4
 [Number of detected no entry signs] 5
-[Correctly identified faces] 0
+[Correctly identified NE signs] 0
 [True positive rate] 0
 [F1-Score] 0
  
 bash-4.2$ ./a.out 7
- 
-[Number of true faces] 1
-[Number of detected no entry signs] 14
-[Correctly identified faces] 0
-[True positive rate] 0
-[F1-Score] 0
+[Number of true NE signs] 1
+[Number of detected no entry signs] 6
+[Correctly identified NE signs] 1
+[True positive rate] 1
+[F1-Score] 0.285714
  
 bash-4.2$ ./a.out 8
- 
-[Number of true faces] 6
+[Number of true NE signs] 6
 [Number of detected no entry signs] 7
-[Correctly identified faces] 3
-[True positive rate] 0.5
-[F1-Score] 0.461538
+[Correctly identified NE signs] 4
+[True positive rate] 0.666667
+[F1-Score] 0.615385
  
 bash-4.2$ ./a.out 9
- 
-[Number of true faces] 2
-[Number of detected no entry signs] 8
-[Correctly identified faces] 1
+[Number of true NE signs] 2
+[Number of detected no entry signs] 5
+[Correctly identified NE signs] 1
 [True positive rate] 0.5
-[F1-Score] 0.2
+[F1-Score] 0.285714
  
 bash-4.2$ ./a.out 10
- 
-[Number of true faces] 3
+[Number of true NE signs] 3
 [Number of detected no entry signs] 5
-[Correctly identified faces] 2
+[Correctly identified NE signs] 2
 [True positive rate] 0.666667
 [F1-Score] 0.5
  
 bash-4.2$ ./a.out 11
- 
-[Number of true faces] 2
-[Number of detected no entry signs] 10
-[Correctly identified faces] 1
+[Number of true NE signs] 2
+[Number of detected no entry signs] 11
+[Correctly identified NE signs] 1
 [True positive rate] 0.5
-[F1-Score] 0.166667
+[F1-Score] 0.153846
  
 bash-4.2$ ./a.out 12
- 
-[Number of true faces] 7
-[Number of detected no entry signs] 11
-[Correctly identified faces] 5
+[Number of true NE signs] 7
+[Number of detected no entry signs] 14
+[Correctly identified NE signs] 5
 [True positive rate] 0.714286
-[F1-Score] 0.555556
+[F1-Score] 0.47619
  
 bash-4.2$ ./a.out 13
- 
-[Number of true faces] 1
-[Number of detected no entry signs] 20
-[Correctly identified faces] 0
+[Number of true NE signs] 1
+[Number of detected no entry signs] 6
+[Correctly identified NE signs] 0
 [True positive rate] 0
 [F1-Score] 0
  
 bash-4.2$ ./a.out 14
- 
-[Number of true faces] 1
-[Number of detected no entry signs] 13
-[Correctly identified faces] 0
-[True positive rate] 0
-[F1-Score] 0
+[Number of true NE signs] 1
+[Number of detected no entry signs] 7
+[Correctly identified NE signs] 1
+[True positive rate] 1
+[F1-Score] 0.25
  
 bash-4.2$ ./a.out 15
- 
-[Number of true faces] 2
+[Number of true NE signs] 2
 [Number of detected no entry signs] 5
-[Correctly identified faces] 2
+[Correctly identified NE signs] 2
 [True positive rate] 1
 [F1-Score] 0.571429

@@ -16,26 +16,27 @@
 #include <iostream>
 #include <stdio.h>
 
-
 using namespace std;
 using namespace cv;
 
 /** Function Headers */
-void detectAndDisplay( Mat image, vector<Rect> &detected_faces);
+void detectAndDisplay( Mat image, vector<Rect> &detected_NE);
 vector<std::string> splitString(string &line, char delimiter);
 void draw_rect (Mat image, Rect r, Scalar c);
-void draw_truth_faces (string imageNum, Mat image, vector<Rect> &truth_faces);
-float num_correctly_detected_faces(vector<Rect> truth_faces, vector<Rect> detected_faces);
-float get_true_positive_rate(int correct_faces, vector<Rect> truth_faces);
+void draw_truth_NE(string imageNum, Mat image, vector<Rect> &truth_NE);
+float get_iou(Rect detected_rect, Rect true_rect);
+float num_correctly_detected_NE(vector<Rect> truth_NE, vector<Rect> detected_NE);
+float get_true_positive_rate(int correct_NE, vector<Rect> truth_NE);
 float get_f1_score(float true_positive, float false_positive, float false_negative);
 
 void sobel(Mat &input, Mat &output_x, Mat &output_y, Mat &output_mag, Mat &output_dir);
 void normalise(Mat &input, string num);
-void threshold(Mat &input, int t, Mat &output);
+void threshold_Magnitude(Mat &input, int t, Mat &output);
 void gaussian(Mat &input, int size, Mat &output);
 void filter_non_max(Mat &input_mag, Mat &input_dir);
-vector<vector<int> > hough_circles(Mat &input, int r_min, int r_max, double threshold, Mat &direction);
-void draw_circles(Mat &input, vector<vector<int> > circles);
+vector<vector<int> > hough_circles(Mat &input, int r_min, int r_max, double threshold, Mat &direction, string imageNum);
+void draw_cricles(Mat &input, vector<vector<int> > circles, string imageNum);
+vector<Rect> filterAndDrawDetected(Mat image, vector<Rect> detected, vector<vector<int> > circles);
 
 int ***malloc3dArray(int dim1, int dim2, int dim3) {
     int i, j, k;
@@ -66,33 +67,95 @@ int main( int argc, const char** argv )
 
 	// 2. Load the Strong Classifier in a structure called `Cascade'
 	if( !cascade.load( cascade_name ) ){ printf("--(!)Error loading\n"); return -1; };
-	
 	cout <<" "<<endl;
+
+	Mat img_gray;
+ 	cvtColor( image, img_gray, CV_BGR2GRAY );
+
+	Mat img_blur;
+	gaussian(img_gray, 7, img_blur);
+
+
+	// ---- perform sobel edge detection ----//
+	Mat img_x;
+	Mat img_y;
+	Mat img_magnitude;
+	Mat img_mag_dir;
+
+	sobel(img_blur, img_x, img_y, img_magnitude, img_mag_dir); 
 	
-	// 3. Detect Faces and Display Result
-	vector<Rect> truth_faces;
-	draw_truth_faces(imageNum,image,truth_faces);
+	Mat n_img_x(image.size(), CV_32FC1);
+	Mat n_img_y(image.size(), CV_32FC1);
+	Mat n_img_magnitude(image.size(), CV_32FC1);
+	Mat n_img_mag_dir(image.size(), CV_32FC1);
+
+	normalize(img_x,n_img_x,0,255,NORM_MINMAX, CV_32FC1);
+    normalize(img_y,n_img_y,0,255,NORM_MINMAX, CV_32FC1);
+    normalize(img_magnitude,n_img_magnitude,0,255,NORM_MINMAX);
+    normalize(img_mag_dir,n_img_mag_dir,0,255,NORM_MINMAX);
+    imwrite("goundTruth_NoEntry_Hough/detected_NE_"+imageNum+"/"+"direction_x.jpg",n_img_x);
+    imwrite("goundTruth_NoEntry_Hough/detected_NE_"+imageNum+"/"+"direction_y.jpg",n_img_y);
+    imwrite("goundTruth_NoEntry_Hough/detected_NE_"+imageNum+"/"+"magnitude.jpg",n_img_magnitude);
+    imwrite("goundTruth_NoEntry_Hough/detected_NE_"+imageNum+"/"+"magnitude_dir.jpg", n_img_mag_dir);
 	
-	vector<Rect> detected_faces;
-	detectAndDisplay(image, detected_faces);
 
-	// 4. Save Result Image
-	imwrite( "goundTruth_NoEntry_Hough/detected_NE_"+imageNum+"/gt_NE_detected"+imageNum+".jpg", image );
+	// ---- viola jones detection ---- //
+	vector<Rect> truth_NE;
+	vector<Rect> detected_NE;
 
-	float correct_faces = num_correctly_detected_faces(truth_faces, detected_faces);
-	float tpr = get_true_positive_rate(correct_faces, truth_faces);
-	float false_positive = detected_faces.size() - correct_faces;
-	float false_negative = truth_faces.size() - correct_faces;
-	float f1_score = get_f1_score(correct_faces, false_positive, false_negative);
+	draw_truth_NE(imageNum,image,truth_NE);
+	detectAndDisplay(image, detected_NE);
+
+	imwrite( "goundTruth_NoEntry_Hough/detected_NE_"+imageNum+"/detected_vj.jpg", image );
 
 
-	cout<< "[Correctly identified faces] " <<correct_faces <<endl;
-	cout<< "[True positive rate] " <<tpr <<endl;
+	// ---- hough circles ---- //
+	float maxRadius = 0;
+	for(int i = 0; i < detected_NE.size(); i++){
+		float a = detected_NE[i].width*detected_NE[i].width;
+		float b = detected_NE[i].height*detected_NE[i].height;
+		float c = sqrt(a + b);
+		if(maxRadius < c){
+			maxRadius = c;
+		}
+	}
+	Mat circle_image = imread("No_entry/NoEntry" +imageNum+ ".bmp", CV_LOAD_IMAGE_COLOR);
+	Mat filtered_image = imread("No_entry/NoEntry" +imageNum+ ".bmp", CV_LOAD_IMAGE_COLOR);
+	Mat coin_magnitude = imread("goundTruth_NoEntry_Hough/detected_NE_"+imageNum+"/"+"magnitude.jpg", 1);
+    Mat gray_magnitude, gray_t_magnitude;
+    cvtColor( coin_magnitude, gray_magnitude, CV_BGR2GRAY );
+	threshold_Magnitude(gray_magnitude, 50, gray_t_magnitude);
+    imwrite("goundTruth_NoEntry_Hough/detected_NE_"+imageNum+"/"+"thresholded_gradient_mag.jpg", gray_t_magnitude);
+
+	vector<vector<int> > circles = hough_circles(gray_t_magnitude, 16, maxRadius, 15, img_mag_dir, imageNum);
+	draw_cricles(circle_image, circles, imageNum);
+
+
+	// ---- filter the vj detected boxes using the circles ---- //
+	vector<Rect> again_truth_NE;
+	draw_truth_NE(imageNum,filtered_image,again_truth_NE);
+	vector<Rect> filtered_NE = filterAndDrawDetected(filtered_image, detected_NE, circles);
+	imwrite( "goundTruth_NoEntry_Hough/detected_NE_"+imageNum+"/detected_vj_filtered.jpg", filtered_image );
+
+	
+	// ---- console log the data ---- //
+	float correct_NE = num_correctly_detected_NE(truth_NE, filtered_NE);
+	float tpr = get_true_positive_rate(correct_NE, truth_NE);
+	float false_positive = filtered_NE.size() - correct_NE;
+	float false_negative = truth_NE.size() - correct_NE;
+	float f1_score = get_f1_score(correct_NE, false_positive, false_negative);
+	
+	cout<< "[Number of detected circles] " << circles.size() << endl;
+	cout<< "[Number of filtered vj detected no entry signs] " << filtered_NE.size() <<endl;
+	cout<< "[Number of gt no entry signs] " << truth_NE.size() <<endl;
+	cout<< "[Correctly identified no entry signs] " <<correct_NE <<endl;
+	cout<< "[TPR] " <<tpr <<endl;
 	cout<< "[F1-Score] " <<f1_score <<endl;
 	cout <<" "<<endl;
 
 	return 0;
 }
+
 
 /** @function splitString */
 vector<std::string> splitString(string &line, char delimiter) {
@@ -111,9 +174,9 @@ void draw_rect (Mat image, Rect r, Scalar c){
 		rectangle(image, Point(r.x, r.y), Point(r.x + r.width, r.y + r.height), c, 2);
 }
 
-/** @function draw_face_truths */
-void draw_truth_faces (string imageNum, Mat image, vector<Rect> &truth_faces){
-	ifstream file("goundTruth_NoEntry_Hough/noentry-ground-truths.csv");
+/** @function draw NE signs truths */
+void draw_truth_NE(string imageNum, Mat image, vector<Rect> &truth_NE){
+	ifstream file("groundTruth_NoEntry/noentry-ground-truths.csv");
 	string line;
 
 	while(getline(file, line)) {
@@ -124,21 +187,19 @@ void draw_truth_faces (string imageNum, Mat image, vector<Rect> &truth_faces){
 		if((tokens[0]=="NoEntry"+imageNum+".jpg")&&(tokens[0]==tokens[0])){
 			//RECT(height, width, x, y) try swapping h and w if not working
 			Rect r = Rect(atoi(tokens[1].c_str()),atoi(tokens[2].c_str()),atoi(tokens[3].c_str()),atoi(tokens[4].c_str()));
-			truth_faces.push_back(r);
+			truth_NE.push_back(r);
 		}
 	}
 	file.close();
 
-	// Draw ground truth faces
-	for( int i = 0; i < truth_faces.size(); i++ ){
-		draw_rect(image, truth_faces[i], Scalar(0,0,255));
+	// Draw ground truth NE signs
+	for( int i = 0; i < truth_NE.size(); i++ ){
+		draw_rect(image, truth_NE[i], Scalar(0,0,255));
 	}
-	// Print nukber of true faces
-	cout<<"[Number of true faces] " << truth_faces.size() <<endl;
 }
 
 /** @function detectAndDisplay */
-void detectAndDisplay( Mat image , vector<Rect> &detected_faces)
+void detectAndDisplay( Mat image , vector<Rect> &detected_NE)
 {
 	Mat image_gray;
 
@@ -147,67 +208,55 @@ void detectAndDisplay( Mat image , vector<Rect> &detected_faces)
 	equalizeHist( image_gray, image_gray );
 
 	// 2. Perform Viola-Jones Object Detection 
-	cascade.detectMultiScale( image_gray, detected_faces, 1.1, 1, 0|CV_HAAR_SCALE_IMAGE, Size(10, 10), Size(300,300) );
+	cascade.detectMultiScale( image_gray, detected_NE, 1.1, 1, 0|CV_HAAR_SCALE_IMAGE, Size(10, 10), Size(300,300) );
 
-    // 3. Draw box around faces found from viola jones
-	for( int i = 0; i < detected_faces.size(); i++ )
+    // 3. Draw box around NE signs found from viola jones
+	for( int i = 0; i < detected_NE.size(); i++ )
 	{
-		draw_rect(image, detected_faces[i], Scalar(0,255,0));
+		draw_rect(image, detected_NE[i], Scalar(0,255,0));
 	}
-
-	// 4. Print number of faces detected
-	cout<<"[Number of detected no entry signs] " << detected_faces.size() <<endl;
 } 
 
-/** @function intersection_over_union */
-float num_correctly_detected_faces(vector<Rect> truth_faces, vector<Rect> detected_faces){
+float get_iou(cv::Rect detected_rect, cv::Rect true_rect) {
+	Rect a = detected_rect & true_rect;
+	Rect b = detected_rect | true_rect;
+  return (a).area() / (float)(b).area();
+}
+
+
+float num_correctly_detected_NE(vector<Rect> truth_NE, vector<Rect> detected_NE){
 	float theshold = 0.4;
-	int correct_faces = 0;
+	int correct_NE = 0;
 
 
-	for(int i=0; i<truth_faces.size(); i++){
-		Rect tf = truth_faces[i];
+	for(int i=0; i<truth_NE.size(); i++){
+		Rect tf = truth_NE[i];
 		float tf_x1 = tf.x + tf.width;
 		float tf_y1 = tf.y + tf.height;
 		float max_iou = 0;
 
-		for(int j=0; j<detected_faces.size(); j++){
-			Rect df = detected_faces[j];
-
-			// calculate intersection over union
-			float df_x1 = df.x + df.width;
-			float df_y1 = df.y + df.height;
-
-
-			float xDiff = min(df_x1, tf_x1) - max(df.x,tf.x);
-			float yDiff = min(df_y1, tf_y1) - max(df.y,tf.y);
-
-			if (xDiff <=0 or yDiff <=0) {
-				continue;
-			}
-			else{
-				float intersect_area = xDiff *yDiff;
-				float union_area = (df.width*df.height) + (tf.width*tf.height) - intersect_area;
-				
-				float iou = intersect_area/union_area;
-				if( iou > max_iou) {
+		for(int j=0; j<detected_NE.size(); j++){
+			Rect df = detected_NE[j];
+			float iou = get_iou(tf, df);
+			if( iou > max_iou) {
 					max_iou = iou;
-				}
 			}
 		}
-		if(max_iou > theshold) correct_faces++;
+		if(max_iou > theshold) correct_NE++;
 	}
-return correct_faces;
+return correct_NE;
 }
 
-float get_true_positive_rate(int correct_faces, vector<Rect> truth_faces){
-	if(truth_faces.size() > 0) return correct_faces/float(truth_faces.size());
+/** @function get tpr */
+float get_true_positive_rate(int correct_NE, vector<Rect> truth_NE){
+	if(truth_NE.size() > 0) return correct_NE/float(truth_NE.size());
 	else{
-		cout << "No true faces" << endl;
+		cout << "No true NE signs" << endl;
 		return 0;
 	}
 }
 
+/** @function get f1-score */
 float get_f1_score(float true_positive, float false_positive, float false_negative){
 	if(true_positive == 0 && false_positive == 0 && false_negative == 0){
 		return 0;
@@ -217,7 +266,7 @@ float get_f1_score(float true_positive, float false_positive, float false_negati
 }
 
 
-
+/** @function perform sobel ED */
 void sobel(Mat &input, Mat &output_x, Mat &output_y, Mat &output_mag, Mat &output_dir) {
     output_x.create(input.size(), CV_32FC1);
     output_y.create(input.size(), CV_32FC1);
@@ -303,7 +352,7 @@ void gaussian(Mat &input, int size, Mat &output)
 }
 
 
-void threshold(Mat &input, int threshold, Mat &output) {
+void threshold_Magnitude(Mat &input, int threshold, Mat &output) {
 	if(threshold >= 0 && threshold <= 255){
 		output.create(input.size(), input.type());
 
@@ -317,11 +366,10 @@ void threshold(Mat &input, int threshold, Mat &output) {
 				}
 			}
 		}
-		imwrite("coin_threshold.jpg", output);
 	}
 }
 
-vector<vector<int> > hough_circles(Mat &input, int r_min, int r_max, double threshold, Mat &direction) {
+vector<vector<int> > hough_circles(Mat &input, int r_min, int r_max, double threshold, Mat &direction, string imageNum) {
 
 	int ***hough_space = malloc3dArray(input.rows, input.cols, r_max);
 
@@ -332,7 +380,6 @@ vector<vector<int> > hough_circles(Mat &input, int r_min, int r_max, double thre
             }
         }
     }
-	cout << "Created array" << endl;
 
 	//-- Make the hough space -- //
     for (int x = 0; x < input.rows; x++) {
@@ -368,7 +415,9 @@ vector<vector<int> > hough_circles(Mat &input, int r_min, int r_max, double thre
         }
     }
 
-    imwrite( "hough_space.jpg", hough_output );
+	Mat hough_norm(input.rows, input.cols, CV_32FC1);
+	normalize(hough_output, hough_norm,0, 255, NORM_MINMAX, CV_8UC1);
+    imwrite( "goundTruth_NoEntry_Hough/detected_NE_" + imageNum + "/hough_space.jpg", hough_norm );
 
 	//--- get the circles ---//
 	vector<vector<int> > circles;
@@ -390,7 +439,6 @@ vector<vector<int> > hough_circles(Mat &input, int r_min, int r_max, double thre
 				int xs = circle[0];
 				int ys = circle[1];
 				int rs = circle[2];
-
 				//equation of a circle (x'-x)^2+(y'-y)^2 = r^2 were x & y are center
 				if(!(pow((xs-x),2) + pow((ys-y),2) > pow(rs,2))) {
 					test_pass = false;
@@ -405,24 +453,49 @@ vector<vector<int> > hough_circles(Mat &input, int r_min, int r_max, double thre
 			}
         }
     }
-
-	cout << "Number of circles: " << circles.size() << endl;
-
 	return circles;
 }
 
-void draw_circles(Mat &input, vector<vector<int> > circles) {
+void draw_cricles(Mat &input, vector<vector<int> > circles, string imageNum) {
 
 	for(int i = 0; i < circles.size(); i++) {
 		vector<int> c = circles[i];
 		Point center = Point(c[1], c[0]);
 		circle(input, center, 1, Scalar(0, 255, 0), 3, 8, 0);
 		int radius = c[2];
-		circle(input, center, radius, Scalar(0, 0, 255), 2, 8, 0);
+		circle(input, center, radius, Scalar(255, 0, 0), 2, 8, 0);
 	}
+	imwrite("goundTruth_NoEntry_Hough/detected_NE_"+imageNum+"/detected_circles.jpg", input);
+}
 
-	stringstream ss;
-	ss << (int) circles.size();
-	imwrite("detected_circles_"+ss.str()+".jpg", input);
+vector<Rect> filterAndDrawDetected(Mat image, vector<Rect> detected, vector<vector<int> > circles){
+	vector<Rect> filteredNE;
 
+	float theshold = 0.4;
+
+		for(int i=0; i<circles.size(); i++){
+			vector<int> circle = circles[i];
+			Rect c = Rect(Point(circle[1] - circle[2], circle[0] - circle[2]) , Point(circle[1] + circle[2], circle[0] + circle[2]));
+			float max_iou = 0;
+			Rect max_rect;
+
+			for(int j=0; j<detected.size(); j++){
+				Rect df = detected[j];
+				float iou = get_iou(df, c);
+				if (iou > max_iou) {
+					max_iou = iou;
+					max_rect = df; 
+     			}
+			}
+			if(max_iou > theshold){
+				filteredNE.push_back(max_rect);	
+			}
+		}
+
+	for( int i = 0; i < filteredNE.size(); i++ ){
+		draw_rect(image, filteredNE[i], Scalar(0,255,0));
+	}
+    cout << "[INFO]: Filtered " << filteredNE.size() << " no entry signs" << endl;
+	cout<<""<<endl;
+	return filteredNE;
 }
