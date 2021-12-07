@@ -53,7 +53,7 @@ int ***malloc3dArray(int dim1, int dim2, int dim3) {
 }
 
 /** Global variables */
-String cascade_name = "NoEntrycascade/cascade.xml";
+String cascade_name = "NoEntrycascade/Oldcascade.xml";
 CascadeClassifier cascade;	
 
 /** @function main */
