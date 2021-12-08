@@ -122,10 +122,11 @@ int main( int argc, const char** argv )
 	}
 	Mat circle_image = imread("No_entry/NoEntry" +imageNum+ ".bmp", CV_LOAD_IMAGE_COLOR);
 	Mat filtered_image = imread("No_entry/NoEntry" +imageNum+ ".bmp", CV_LOAD_IMAGE_COLOR);
-	Mat coin_magnitude = imread("subtask 4/detected_NE_"+imageNum+"/"+"magnitude.jpg", 1);
+	Mat magnitude = imread("subtask 4/detected_NE_"+imageNum+"/"+"magnitude.jpg", 1);
     Mat gray_magnitude, gray_t_magnitude;
-    cvtColor( coin_magnitude, gray_magnitude, CV_BGR2GRAY );
-	threshold_Magnitude(gray_magnitude, 50, gray_t_magnitude);
+    cvtColor( magnitude, gray_magnitude, CV_BGR2GRAY );
+
+	threshold_Magnitude(gray_magnitude, 60, gray_t_magnitude);
     imwrite("subtask 4/detected_NE_"+imageNum+"/"+"thresholded_gradient_mag.jpg", gray_t_magnitude);
 
 	vector<vector<int> > circles = hough_circles(gray_t_magnitude, 16, maxRadius, 15, img_mag_dir, imageNum);
@@ -209,7 +210,7 @@ void detectAndDisplay( Mat image ,Mat Vimage, vector<Rect> &detected_NE)
 	// 1. Prepare Image by turning it into Grayscale and normalising lighting
 	cvtColor( Vimage, image_gray, CV_BGR2GRAY );
 	equalizeHist( image_gray, image_eq );
-	medianBlur(image_eq, image_blur,3);
+	medianBlur(image_eq, image_blur,3); // aditional pre-processing
 
 
 	// 2. Perform Viola-Jones Object Detection 

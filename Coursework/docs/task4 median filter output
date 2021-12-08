@@ -96,8 +96,8 @@ bash-4.2$ ./a.out 8
 [Number of filtered vj detected no entry signs] 3
 [Number of gt no entry signs] 6
 [Correctly identified no entry signs] 3
-[TPR] 0.5
-[F1-Score] 0.666667
+[TPR] 0.666667
+[F1-Score] 0.8
  
 bash-4.2$ ./a.out 9
  
@@ -118,8 +118,8 @@ bash-4.2$ ./a.out 10
 [Number of filtered vj detected no entry signs] 1
 [Number of gt no entry signs] 3
 [Correctly identified no entry signs] 1
-[TPR] 0.333333
-[F1-Score] 0.5
+[TPR] 0.666667
+[F1-Score] 0.8
  
 bash-4.2$ ./a.out 11
  
