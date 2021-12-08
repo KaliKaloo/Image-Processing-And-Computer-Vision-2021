@@ -195,9 +195,9 @@ void draw_truth_NE(string imageNum, Mat image, vector<Rect> &truth_NE){
 	file.close();
 
 	// Draw ground truth NE signs
-	// for( int i = 0; i < truth_NE.size(); i++ ){
-	// 	draw_rect(image, truth_NE[i], Scalar(0,0,255));
-	// }
+	for( int i = 0; i < truth_NE.size(); i++ ){
+		draw_rect(image, truth_NE[i], Scalar(0,0,255));
+	}
 }
 
 /** @function detectAndDisplay */
