@@ -1,6 +1,14 @@
 # Image-Processing-And-Computer-Vision-2021
 
-Below are the source files and their outputs  
+Source files can be compilied and run using the piece of code below:  
+```
+g++ 'file_name'.cpp /usr/lib64/libopencv_core.so.2.4/usr/lib64/libopencv_highgui.so.2.4
+```
+```
+./a.out 'insert image filepath'    
+```
+
+Below are the source files and their outputs:    
 **Subtask 1 face detection:** gt_face.cpp  
 **outout:** Images are located in groundTruths_faces folder. Draws detected faces in green and ground truths in red.
 
