@@ -37,11 +37,13 @@ CascadeClassifier cascade;
 /** @function main */
 int main( int argc, const char** argv )
 {
-	string imageNum = argv[1];
+	string filename = argv[1];
 
-	// MAKE SURE TO CHANGE THE WAY YOU READ IN THE FILE NAME!!!!!!
     // 1. Read Input Image
-	Mat image = imread("No_entry/NoEntry" +imageNum+ ".bmp", CV_LOAD_IMAGE_COLOR);
+	vector<string> filepath = splitString(filename, '/');
+	vector<string> fullname = splitString(filepath.back(), '.');
+	string name = fullname[0];
+	Mat image = imread("No_entry/"+name+ ".bmp", CV_LOAD_IMAGE_COLOR);
 
 	// 2. Load the Strong Classifier in a structure called `Cascade'
 	if( !cascade.load( cascade_name ) ){ printf("--(!)Error loading\n"); return -1; };
@@ -50,13 +52,13 @@ int main( int argc, const char** argv )
 	
 	// 3. Detect signs and Display Result
 	vector<Rect> truth_NE;
-	draw_truth_NE(imageNum,image,truth_NE);
+	draw_truth_NE(name,image,truth_NE);
 	
 	vector<Rect> detected_NE;
 	detectAndDisplay(image, detected_NE);
 
 	// 4. Save Result Image
-	imwrite( "groundTruth_NoEntry/gt_NE_detected"+imageNum+".jpg", image );
+	imwrite( "groundTruth_NoEntry/gt_NE_detected_"+name+".jpg", image );
 
 	float correct_NE = num_correctly_detected_NE(truth_NE, detected_NE);
 	float tpr = get_true_positive_rate(correct_NE, truth_NE);
@@ -91,17 +93,14 @@ void draw_rect (Mat image, Rect r, Scalar c){
 }
 
 /** @function draw NE signs truths */
-void draw_truth_NE(string imageNum, Mat image, vector<Rect> &truth_NE){
+void draw_truth_NE(string name, Mat image, vector<Rect> &truth_NE){
 	ifstream file("groundTruth_NoEntry/noentry-ground-truths.csv");
 	string line;
 
 	while(getline(file, line)) {
 		vector<string> tokens = splitString(line, ',');
-		
-		// MAKE SURE TO CHANGE THE WAY YOU READ IN THE FILE NAME!!!!!!
 
-		if((tokens[0]=="NoEntry"+imageNum+".jpg")&&(tokens[0]==tokens[0])){
-			//RECT(height, width, x, y) try swapping h and w if not working
+		if((tokens[0]==name+".jpg")&&(tokens[0]==tokens[0])){
 			Rect r = Rect(atoi(tokens[1].c_str()),atoi(tokens[2].c_str()),atoi(tokens[3].c_str()),atoi(tokens[4].c_str()));
 			truth_NE.push_back(r);
 		}

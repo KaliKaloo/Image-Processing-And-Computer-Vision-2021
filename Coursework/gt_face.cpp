@@ -37,11 +37,13 @@ CascadeClassifier cascade;
 /** @function main */
 int main( int argc, const char** argv )
 {
-	string imageNum = argv[1];
+	string filename = argv[1];
 
-	// MAKE SURE TO CHANGE THE WAY YOU READ IN THE FILE NAME!!!!!!
     // 1. Read Input Image
-	Mat image = imread("No_entry/NoEntry" +imageNum+ ".bmp", CV_LOAD_IMAGE_COLOR);
+	vector<string> filepath = splitString(filename, '/');
+	vector<string> fullname = splitString(filepath.back(), '.');
+	string name = fullname[0];
+	Mat image = imread("No_entry/"+name+ ".bmp", CV_LOAD_IMAGE_COLOR);
 
 	// 2. Load the Strong Classifier in a structure called `Cascade'
 	if( !cascade.load( cascade_name ) ){ printf("--(!)Error loading\n"); return -1; };
@@ -50,13 +52,13 @@ int main( int argc, const char** argv )
 	
 	// 3. Detect Faces and Display Result
 	vector<Rect> truth_faces;
-	draw_truth_faces(imageNum,image,truth_faces);
+	draw_truth_faces(name,image,truth_faces);
 	
 	vector<Rect> detected_faces;
 	detectAndDisplay(image, detected_faces);
 
 	// 4. Save Result Image
-	imwrite( "groundTruth_faces/gt_face_detected"+imageNum+".jpg", image );
+	imwrite( "groundTruth_faces/gt_face_detected_"+name+".jpg", image );
 
 	float correct_faces = num_correctly_detected_faces(truth_faces, detected_faces);
 	float tpr = get_true_positive_rate(correct_faces, truth_faces);
@@ -91,16 +93,14 @@ void draw_rect (Mat image, Rect r, Scalar c){
 }
 
 /** @function draw_face_truths */
-void draw_truth_faces (string imageNum, Mat image, vector<Rect> &truth_faces){
+void draw_truth_faces (string name, Mat image, vector<Rect> &truth_faces){
 	ifstream file("groundTruth_faces/faces-ground-truths.csv");
 	string line;
 
 	while(getline(file, line)) {
 		vector<string> tokens = splitString(line, ',');
 		
-		// MAKE SURE TO CHANGE THE WAY YOU READ IN THE FILE NAME!!!!!!
-
-		if((tokens[0]=="NoEntry"+imageNum+".jpg")&&(tokens[0]==tokens[0])){
+		if((tokens[0]==name+".jpg")&&(tokens[0]==tokens[0])){
 			//RECT(height, width, x, y) try swapping h and w if not working
 			Rect r = Rect(atoi(tokens[1].c_str()),atoi(tokens[2].c_str()),atoi(tokens[3].c_str()),atoi(tokens[4].c_str()));
 			truth_faces.push_back(r);

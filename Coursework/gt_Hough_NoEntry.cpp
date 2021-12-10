@@ -23,7 +23,7 @@ using namespace cv;
 void detectAndDisplay( Mat image, vector<Rect> &detected_NE);
 vector<std::string> splitString(string &line, char delimiter);
 void draw_rect (Mat image, Rect r, Scalar c);
-void draw_truth_NE(string imageNum, Mat image, vector<Rect> &truth_NE);
+void draw_truth_NE(string name, Mat image, vector<Rect> &truth_NE);
 float get_iou(Rect detected_rect, Rect true_rect);
 float num_correctly_detected_NE(vector<Rect> truth_NE, vector<Rect> detected_NE);
 float get_true_positive_rate(int correct_NE, vector<Rect> truth_NE);
@@ -34,8 +34,8 @@ void normalise(Mat &input, string num);
 void threshold_Magnitude(Mat &input, int t, Mat &output);
 void gaussian(Mat &input, int size, Mat &output);
 void filter_non_max(Mat &input_mag, Mat &input_dir);
-vector<vector<int> > hough_circles(Mat &input, int r_min, int r_max, double threshold, Mat &direction, string imageNum);
-void draw_cricles(Mat &input, vector<vector<int> > circles, string imageNum);
+vector<vector<int> > hough_circles(Mat &input, int r_min, int r_max, double threshold, Mat &direction, string name);
+void draw_cricles(Mat &input, vector<vector<int> > circles, string name);
 vector<Rect> filterAndDrawDetected(Mat image, vector<Rect> detected, vector<vector<int> > circles);
 
 int ***malloc3dArray(int dim1, int dim2, int dim3) {
@@ -53,17 +53,19 @@ int ***malloc3dArray(int dim1, int dim2, int dim3) {
 }
 
 /** Global variables */
-String cascade_name = "NoEntrycascade/Oldcascade.xml";
+String cascade_name = "NoEntrycascade/cascade.xml";
 CascadeClassifier cascade;	
 
 /** @function main */
 int main( int argc, const char** argv )
 {
-	string imageNum = argv[1];
+	string filename = argv[1];
 
-	// MAKE SURE TO CHANGE THE WAY YOU READ IN THE FILE NAME!!!!!!
     // 1. Read Input Image
-	Mat image = imread("No_entry/NoEntry" +imageNum+ ".bmp", CV_LOAD_IMAGE_COLOR);
+	vector<string> filepath = splitString(filename, '/');
+	vector<string> fullname = splitString(filepath.back(), '.');
+	string name = fullname[0];
+	Mat image = imread("No_entry/"+name+ ".bmp", CV_LOAD_IMAGE_COLOR);
 
 	// 2. Load the Strong Classifier in a structure called `Cascade'
 	if( !cascade.load( cascade_name ) ){ printf("--(!)Error loading\n"); return -1; };
@@ -93,20 +95,20 @@ int main( int argc, const char** argv )
     normalize(img_y,n_img_y,0,255,NORM_MINMAX, CV_32FC1);
     normalize(img_magnitude,n_img_magnitude,0,255,NORM_MINMAX);
     normalize(img_mag_dir,n_img_mag_dir,0,255,NORM_MINMAX);
-    imwrite("goundTruth_NoEntry_Hough/detected_NE_"+imageNum+"/"+"direction_x.jpg",n_img_x);
-    imwrite("goundTruth_NoEntry_Hough/detected_NE_"+imageNum+"/"+"direction_y.jpg",n_img_y);
-    imwrite("goundTruth_NoEntry_Hough/detected_NE_"+imageNum+"/"+"magnitude.jpg",n_img_magnitude);
-    imwrite("goundTruth_NoEntry_Hough/detected_NE_"+imageNum+"/"+"magnitude_dir.jpg", n_img_mag_dir);
+    imwrite("goundTruth_NoEntry_Hough/detected_"+name+"/"+"direction_x.jpg",n_img_x);
+    imwrite("goundTruth_NoEntry_Hough/detected_"+name+"/"+"direction_y.jpg",n_img_y);
+    imwrite("goundTruth_NoEntry_Hough/detected_"+name+"/"+"magnitude.jpg",n_img_magnitude);
+    imwrite("goundTruth_NoEntry_Hough/detected_"+name+"/"+"magnitude_dir.jpg", n_img_mag_dir);
 	
 
 	// ---- viola jones detection ---- //
 	vector<Rect> truth_NE;
 	vector<Rect> detected_NE;
 
-	draw_truth_NE(imageNum,image,truth_NE);
+	draw_truth_NE(name,image,truth_NE);
 	detectAndDisplay(image, detected_NE);
 
-	imwrite( "goundTruth_NoEntry_Hough/detected_NE_"+imageNum+"/detected_vj.jpg", image );
+	imwrite( "goundTruth_NoEntry_Hough/detected_"+name+"/detected_vj.jpg", image );
 
 
 	// ---- hough circles ---- //
@@ -119,26 +121,26 @@ int main( int argc, const char** argv )
 			maxRadius = c;
 		}
 	}
-	Mat circle_image = imread("No_entry/NoEntry" +imageNum+ ".bmp", CV_LOAD_IMAGE_COLOR);
-	Mat filtered_image = imread("No_entry/NoEntry" +imageNum+ ".bmp", CV_LOAD_IMAGE_COLOR);
-	Mat coin_magnitude = imread("goundTruth_NoEntry_Hough/detected_NE_"+imageNum+"/"+"magnitude.jpg", 1);
+	Mat circle_image = imread("No_entry/" +name+ ".bmp", CV_LOAD_IMAGE_COLOR);
+	Mat filtered_image = imread("No_entry/" +name+ ".bmp", CV_LOAD_IMAGE_COLOR);
+	Mat magnitude = imread("goundTruth_NoEntry_Hough/detected_"+name+"/"+"magnitude.jpg", 1);
     Mat gray_magnitude, gray_t_magnitude;
-    cvtColor( coin_magnitude, gray_magnitude, CV_BGR2GRAY );
+    cvtColor(magnitude, gray_magnitude, CV_BGR2GRAY );
 	threshold_Magnitude(gray_magnitude, 50, gray_t_magnitude);
-    imwrite("goundTruth_NoEntry_Hough/detected_NE_"+imageNum+"/"+"thresholded_gradient_mag.jpg", gray_t_magnitude);
+    imwrite("goundTruth_NoEntry_Hough/detected_"+name+"/"+"thresholded_gradient_mag.jpg", gray_t_magnitude);
 
-	vector<vector<int> > circles = hough_circles(gray_t_magnitude, 16, maxRadius, 15, img_mag_dir, imageNum);
-	draw_cricles(circle_image, circles, imageNum);
+	vector<vector<int> > circles = hough_circles(gray_t_magnitude, 16, maxRadius, 15, img_mag_dir, name);
+	draw_cricles(circle_image, circles, name);
 
 
 	// ---- filter the vj detected boxes using the circles ---- //
 	vector<Rect> again_truth_NE;
-	draw_truth_NE(imageNum,filtered_image,again_truth_NE);
+	draw_truth_NE(name,filtered_image,again_truth_NE);
 	vector<Rect> filtered_NE = filterAndDrawDetected(filtered_image, detected_NE, circles);
-	imwrite( "goundTruth_NoEntry_Hough/detected_NE_"+imageNum+"/detected_vj_filtered.jpg", filtered_image );
+	imwrite( "goundTruth_NoEntry_Hough/detected_"+name+"/detected_vj_filtered.jpg", filtered_image );
 
 	
-	// ---- console log the data ---- //
+	// // ---- console log the data ---- //
 	float correct_NE = num_correctly_detected_NE(truth_NE, filtered_NE);
 	float tpr = get_true_positive_rate(correct_NE, truth_NE);
 	float false_positive = filtered_NE.size() - correct_NE;
@@ -175,17 +177,14 @@ void draw_rect (Mat image, Rect r, Scalar c){
 }
 
 /** @function draw NE signs truths */
-void draw_truth_NE(string imageNum, Mat image, vector<Rect> &truth_NE){
+void draw_truth_NE(string name, Mat image, vector<Rect> &truth_NE){
 	ifstream file("groundTruth_NoEntry/noentry-ground-truths.csv");
 	string line;
 
 	while(getline(file, line)) {
 		vector<string> tokens = splitString(line, ',');
-		
-		// MAKE SURE TO CHANGE THE WAY YOU READ IN THE FILE NAME!!!!!!
 
-		if((tokens[0]=="NoEntry"+imageNum+".jpg")&&(tokens[0]==tokens[0])){
-			//RECT(height, width, x, y) try swapping h and w if not working
+		if((tokens[0]==name+".jpg")&&(tokens[0]==tokens[0])){
 			Rect r = Rect(atoi(tokens[1].c_str()),atoi(tokens[2].c_str()),atoi(tokens[3].c_str()),atoi(tokens[4].c_str()));
 			truth_NE.push_back(r);
 		}
@@ -369,7 +368,7 @@ void threshold_Magnitude(Mat &input, int threshold, Mat &output) {
 	}
 }
 
-vector<vector<int> > hough_circles(Mat &input, int r_min, int r_max, double threshold, Mat &direction, string imageNum) {
+vector<vector<int> > hough_circles(Mat &input, int r_min, int r_max, double threshold, Mat &direction, string name) {
 
 	int ***hough_space = malloc3dArray(input.rows, input.cols, r_max);
 
@@ -417,7 +416,7 @@ vector<vector<int> > hough_circles(Mat &input, int r_min, int r_max, double thre
 
 	Mat hough_norm(input.rows, input.cols, CV_32FC1);
 	normalize(hough_output, hough_norm,0, 255, NORM_MINMAX, CV_8UC1);
-    imwrite( "goundTruth_NoEntry_Hough/detected_NE_" + imageNum + "/hough_space.jpg", hough_norm );
+    imwrite( "goundTruth_NoEntry_Hough/detected_" + name + "/hough_space.jpg", hough_norm );
 
 	//--- get the circles ---//
 	vector<vector<int> > circles;
@@ -456,7 +455,7 @@ vector<vector<int> > hough_circles(Mat &input, int r_min, int r_max, double thre
 	return circles;
 }
 
-void draw_cricles(Mat &input, vector<vector<int> > circles, string imageNum) {
+void draw_cricles(Mat &input, vector<vector<int> > circles, string name) {
 
 	for(int i = 0; i < circles.size(); i++) {
 		vector<int> c = circles[i];
@@ -465,7 +464,7 @@ void draw_cricles(Mat &input, vector<vector<int> > circles, string imageNum) {
 		int radius = c[2];
 		circle(input, center, radius, Scalar(255, 0, 0), 2, 8, 0);
 	}
-	imwrite("goundTruth_NoEntry_Hough/detected_NE_"+imageNum+"/detected_circles.jpg", input);
+	imwrite("goundTruth_NoEntry_Hough/detected_"+name+"/detected_circles.jpg", input);
 }
 
 vector<Rect> filterAndDrawDetected(Mat image, vector<Rect> detected, vector<vector<int> > circles){
