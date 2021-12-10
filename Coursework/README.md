@@ -1,6 +1,6 @@
 # Image-Processing-And-Computer-Vision-2021
 
-Below are the source files and their outputs
+Below are the source files and their outputs  
 **Subtask 1 face detection:** gt_face.cpp
 **outout:** Images are located in groundTruths_faces folder. Draws detected faces in green and ground truths in red.
 
